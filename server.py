@@ -38,9 +38,9 @@ while 1:
 		#Receive a command from the client.
 		command = connectionSocket.recv(4)
 
-		#If the command is 'exit', then exit the ftp session.
-		if command == "exit":
-			print("Command received was 'exit'")
+		#If the command is 'quit', then quit the ftp session.
+		if command == "quit":
+			print("Command received was 'quit'")
 			#Send back a 0 to the client to indicate that the ftp session is over.
 			connectionSocket.send("0")
 			#Break out of the inner while loop.

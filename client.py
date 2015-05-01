@@ -48,7 +48,7 @@ while True:
             pass
         elif command[0] == "push":
             pass
-        elif command[0] == "exit":
+        elif command[0] == "quit":
             # Send the command to the server.
             clientSocket.send(command[0])
             # Receive a new connectionFlag from the server.
