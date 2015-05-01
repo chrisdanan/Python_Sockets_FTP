@@ -45,10 +45,12 @@ while 1:
 			connectionSocket.send("0")
 			#Break out of the inner while loop.
 			break
-		else:
-			print("Could not understand; please input another command")
-			connectionSocket.send("1")
+		elif command == "ls":
+			print("ls: print the list of files")
 
-	print("Closing connection")
 
-	connectionSocket.close()
+	break
+
+connectionSocket.close()
+print("Closing connection")
+

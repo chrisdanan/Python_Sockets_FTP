@@ -27,24 +27,36 @@ while True:
     connectionFlag = clientSocket.recv(9)
 
     #If server gives back connection flag of 1, then send it gives the OK for client to send a command.
-    if connectionFlag == "1":
+    while connectionFlag == "1":
     	#Reference for getting raw input:
     	#http://stackoverflow.com/questions/3345202/python-getting-user-input
     	#User types in a command that will be sent to the server.
-    	command = raw_input("ftp>>")
+    	command = raw_input("ftp> ").split(" ")
+            
+        if command[0] == "ls":
+            clientSocket.send(command[0])
+        elif command[0] == "lls":
+            pass
+        elif command[0] == "get":
+            pass
+        elif command[0] == "push":
+            pass
+        elif command[0] == "exit":
+            #Send the command to the server.
+            clientSocket.send(command[0])
+            #Receive a new connectionFlag from the server.
+            connectionFlag = clientSocket.recv(9)
+            break
+        elif command[0] == "":
+            pass
+        else:
+            print("Invalid command entered.")
 
-    	#Send the command to the server.
-    	clientSocket.send(command)
-
-    	command = ""
-    	
-    	#Receive a new connectionFlag from the server.
-    	connectionFlag = clientSocket.recv(9)
 
     #If the server sends back any other number, then break out of the loop (indicates that server is done accepting commands).
-    else:
-    	break
+    break
 
+clientSocket.close()
 print("Finished with client")
 
 
