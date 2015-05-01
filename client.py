@@ -6,8 +6,8 @@ import sys
 
 #Check the arguments passed by command line.
 if len(sys.argv) != 3:
-	print("USAGE python" + sys.argv[0] + " <server_machine> <server_port>")
-	sys.exit()
+    print("USAGE python" + sys.argv[0] + " <server_machine> <server_port>")
+    sys.exit()
 
 #Server address.
 serverAddress = sys.argv[1]
@@ -28,15 +28,18 @@ while True:
 
     #If server gives back connection flag of 1, then send it gives the OK for client to send a command.
     while connectionFlag == "1":
-    	#Reference for getting raw input:
-    	#http://stackoverflow.com/questions/3345202/python-getting-user-input
-    	#User types in a command that will be sent to the server.
-    	command = raw_input("ftp> ").split(" ")
+        #Reference for getting raw input:
+        #http://stackoverflow.com/questions/3345202/python-getting-user-input
+        #User types in a command that will be sent to the server.
+        command = raw_input("ftp> ").split(" ")
             
         if command[0] == "ls":
             clientSocket.send(command[0])
         elif command[0] == "lls":
-            pass
+            path = os.path.dirname(os.path.realpath(__file__))
+            lls = os.listdir(path)
+            for value in lls:
+                print (value)
         elif command[0] == "get":
             pass
         elif command[0] == "push":
