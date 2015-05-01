@@ -26,8 +26,26 @@ while 1:
 	#Accept a connection and get client's socket.
 	connectionSocket, addr = serverSocket.accept()
 
-	data = "It works!"
+	print("Accepted connection from " + str(addr))
 
-	connectionSocket.send(data)
+	#Send to the client that the server is ready to receive ftp commands.
+	connectionSocket.send("1")
+
+	#Wait for incoming ftp commands.
+	while 1:
+		print("Waiting for command from client.")
+
+		#Receive a command from the client.
+		command = connectionSocket.recv(4)
+
+		#If the command is 'exit', then exit the ftp session.
+		if command == "exit":
+			print("Command received was 'exit'")
+			#Send back a 0 to the client to indicate that the ftp session is over.
+			connectionSocket.send("0")
+			#Break out of the inner while loop.
+			break
+
+	print("Closing connection")
 
 	connectionSocket.close()
