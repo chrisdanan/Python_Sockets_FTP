@@ -36,6 +36,8 @@ while True:
     	#Send the command to the server.
     	clientSocket.send(command)
 
+    	command = ""
+    	
     	#Receive a new connectionFlag from the server.
     	connectionFlag = clientSocket.recv(9)
 

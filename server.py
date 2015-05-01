@@ -45,6 +45,9 @@ while 1:
 			connectionSocket.send("0")
 			#Break out of the inner while loop.
 			break
+		else:
+			print("Could not understand; please input another command")
+			connectionSocket.send("1")
 
 	print("Closing connection")
 
