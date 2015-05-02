@@ -1,5 +1,5 @@
 Names: Sarah Lee (sujuelf@csu.fullerton.edu)
-       Austin Greene 
+       Austin Greene (greenerz90@csu.fullerton.edu)
        Chris Danan (poisongrape@csu.fullerton.edu)
        Mario Andrade (ziosrighthandman@csu.fullerton.edu)
 Programming Language Used: Python
