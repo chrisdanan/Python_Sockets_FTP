@@ -139,7 +139,68 @@ while True:
             for value in lls:
                 print (value)
         elif command[0] == "get":
-            pass
+            if len(command) !=2:
+                print("USAGE get <filename>")
+            else:
+
+                #Send 'get' command.
+                clientSocket.send(command[0])
+
+                #Send filename.
+                clientSocket.send(command[1])
+
+                #Generate ephemeral port.
+                #Reference: Professor Gofman's example code.
+                dataSocket = socket(AF_INET, SOCK_STREAM)
+                dataSocket.bind(("", 0))
+                print("I chose ephemeral port: ", dataSocket.getsockname()[1])
+
+                #Send ephemeral port number to server.
+                clientSocket.send(str(dataSocket.getsockname()[1]))
+                dataSocket.listen(1)
+
+                while 1:
+                    print("Waiting for server connection to channel.")
+                    connectionSocket, addr = dataSocket.accept()
+
+                    print("Received connection from the server.")
+
+                    #The buffer to all data received from the server.
+                    fileData = ""
+
+                    #The size of the incoming file.
+                    recvBuff = ""
+
+                    fileSize = 0
+                    
+                    #The buffer containing the file size.
+                    fileSizeBuff = ""
+
+                    #Receive the first 10 bytes indicating the size of the file.
+                    fileSizeBuff = recvAll(connectionSocket, 10)
+
+                    fileSize = int(fileSizeBuff)
+
+                    print("The file size is ", fileSize)
+
+                    #Get the file data.
+                    fileData = recvAll(connectionSocket, fileSize)
+
+                    print (fileData)
+
+                    print("File received: " + command[1])
+                    print("Size of file received: ", fileSize)
+
+                    print("Saving data to a file")
+
+                    solutionFile = open('client_received.txt', 'w')
+                    solutionFile.write(fileData)
+                    solutionFile.close()
+
+                    connectionSocket.close()
+
+                    break
+
         elif command[0] == "put":
             #Check for correct usage of 'put'
             if len(command) != 2:

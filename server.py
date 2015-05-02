@@ -184,6 +184,56 @@ while 1:
 
 			#Send flag to client indicating that the server is ready to receive more commands.
 			connectionSocket.send("1")
+
+		elif command == 'get':
+			print('The command received was get')
+			fileName = connectionSocket.recv(50)
+			print("Waiting for command from client")
+			path = os.path.dirname(os.path.realpath(__file__))
+			print("Filename is " + fileName)
+
+			#Send the file to the server if it exists.
+			#Reference: http://stackoverflow.com/questions/82831/check-if-a-file-exists-using-python#comment38282943_82852
+			if os.path.isfile(path + '/' + fileName) == True:
+
+				#Open the file.
+				fileObj = open(fileName, "r")
+
+				#The file data.
+				fileData = None
+
+				#Receive ephemeral port from client.
+				serverEphemeralPort = int(connectionSocket.recv(10))
+				print("Received ephemeral port: ", serverEphemeralPort)
+
+				serverDataSocket = socket(AF_INET, SOCK_STREAM)
+				serverDataSocket.connect(("localhost", serverEphemeralPort))
+
+				fileData = fileObj.read(65536)
+
+				if fileData:
+
+					dataSizeStr = str(len(fileData))
+
+					while len(dataSizeStr) < 10:
+						dataSizeStr = "0" + dataSizeStr
+
+					fileData = dataSizeStr + fileData
+
+					numSent = 0
+
+					while len(fileData) > numSent:
+						numSent += serverDataSocket.send(fileData[numSent:])
+
+					print("Sent " + fileName + " to the client.")
+					print(numSent, " bytes sent to the client.")
+
+					connectionSocket.send("1")
+
+					serverDataSocket.close()
+			else:
+				print("File does not exist")
+				connectionSocket.send("1")
 	break
 
 connectionSocket.close()
