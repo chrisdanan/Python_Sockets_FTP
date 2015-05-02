@@ -80,8 +80,56 @@ while True:
         command = raw_input("ftp> ").split(" ")
             
         if command[0] == "ls":
+
+            #Declare variables
+            sData = ""
+            recvBuff = ""
+            sSize = 0
+            sSizeBuff = ""
+
             #Consider opening an ephemeral port on this one.
             clientSocket.send(command[0])
+
+            #Generate the ephemeral port.
+            #Reference: Professor Gofman's code.
+            dataSocket = socket(AF_INET, SOCK_STREAM)
+            dataSocket.bind(("", 0))
+            print("I chose ephemeral port: ", dataSocket.getsockname()[1])
+
+            #Send ephemeral port number to the server.
+            clientSocket.send(str(dataSocket.getsockname()[1]))
+            dataSocket.listen(1)
+
+            while 1:
+                print("Waiting for server connection to data channel")
+
+                #Accept connection from the server.
+                connectionSocket, addr = dataSocket.accept()
+
+                print("Received connection from server.")
+
+                #Get the size of the incoming data from the server.
+                sSizeBuff = recvAll(connectionSocket, 10)
+
+                sSize = int(sSizeBuff)
+
+                #Get the data from the server (get the list of files on the server)
+                #NOTE: Since we are using localhost as our client and server, this should be the same list as 'lls'.
+                sData = recvAll(connectionSocket, sSize)
+
+                #Print the data to the client.
+                print("Data received from the server:")
+                print(sData)
+                print("Size of data: ", sSize)
+
+                #Get connectionFlag from server.
+                connectionFlag = clientSocket.recv(9)
+
+                #Close the data connection.
+                connectionSocket.close()
+
+                break
+
         elif command[0] == "lls":
             # Get the real path of this file we are running. 
             path = os.path.dirname(os.path.realpath(__file__))
@@ -127,7 +175,7 @@ while True:
                     dataSocket.listen(1)
 
                     while 1:
-                        print("Waiting for server connection.")
+                        print("Waiting for server connection to data channel.")
 
                         connectionSocket, addr = dataSocket.accept()
 

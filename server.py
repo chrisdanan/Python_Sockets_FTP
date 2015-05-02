@@ -91,6 +91,50 @@ while 1:
 			break
 		elif command == "ls":
 			print("ls: print the list of files")
+
+			#Receive ephemeral port from client.
+			ephemeralPort = int(connectionSocket.recv(10))
+			print("Received ephemeral port: ", ephemeralPort)
+
+			#Create new data connection for data transfer.
+			serverDataSocket = socket(AF_INET, SOCK_STREAM)
+			serverDataSocket.connect(("localhost", ephemeralPort))
+
+			s = ""
+
+			#Get the real path of this file we are running.
+			path = os.path.dirname(os.path.realpath(__file__))
+
+			#Get the list of files in the directory.
+			ls = os.listdir(path)
+
+			#Attach all the file names to s.
+			for value in ls:
+				s = s + value + "\n"
+
+			#Get the size of the data read and convert it to string.
+			size = str(len(s))
+
+			#Pad size with 0s to make a 10 byte header.
+			while len(size) < 10:
+				size = "0" + size
+
+			#Put size in front of data.
+			s = size + s
+
+			#Number of bytes sent.
+			numSent = 0
+
+			#Send the data (list of files on the server)
+			while len(s) > numSent:
+				numSent += serverDataSocket.send(s[numSent:])
+
+			print("SUCCESS")
+
+			#Close the data connection.
+			serverDataSocket.close()
+
+			connectionSocket.send("1")
 		#If the command is 'put', then client wants to put a file onto the server.
 		elif command == "put":
 			print("Command received was 'put'")
