@@ -1,0 +1,58 @@
+Designing the Protocol:
+
+
+-What kinds of messages will be exchanged across the control connection?
+
+The control connection will be used to exchange control commands sent by the client.  These commands are 'lls', 'put', 'get', and 'quit' ('ls' will not be sent across the control connection).
+
+Also, a control flag will be sent from the server to the client.  This flag will indicate the state the server is in.  If a control flag of "1" is sent, then the server is waiting for more commands from the client.  If a control flag of "0" is sent, then the server has ended communication with the client, so the client should terminate.
+
+
+-How does the other side respond to each type of message?
+
+If the server receives a control command sent from the client, then it will respond according to the command.
+
+If the server receives 'lls', then it will send back a list of its files.
+
+If the server receives 'put', then it will download the file sent by the client.
+
+If the server receives 'get', then it will send the client the file is requesting.
+
+If the server receives 'quit', then it will terminate its connection with the client.
+
+Each command (other than 'quit') will establish a separate channel for sending/receiving data.  This channel is called the data channel.  The client will establish the data channel by opening an ephemeral port, and the server will then connect to the client.  After the data channel is established, the data (files or server list of files) will be sent over the channel and then destroyed.  This all takes place while the control connection is still open.
+
+The client will respond to control flags in the way described in the first question.
+
+
+-What sizes/formats will the messages have?
+
+Control commands will take the form of the following:
+
+'lls'
+
+'put <file_name>'
+
+'get <file_name>'
+
+'quit'
+
+The control flags will be a string of either a "1" or "0".
+
+
+-What message exchanges have to take place in order to setup a file transfer channel?
+
+First, the client has to send a control command indicating that it wishes to enact a file transfer (either 'put' or 'get').
+
+After the control command is sent, the client will then establish an ephemeral port and wait for the server to connect.
+
+Once the server connects, either the client or the server will locate the file that is requested and append a 10 byte "header" to the front of the data.  This "header" indicates the size of the data that is to be sent.  The data is then sent to the other entity (either client or server).
+
+Upon receiving data, the other entity then gets the first 10 bytes and notes the size of the data.  It then uses this size to get the rest of the data from the sending side.  Once it receives the number of bytes indicated by the header, it will stop receiving the file.
+
+After completion of file transfer, both sides will receive a message indicating that they should destroy the data channel.
+
+
+-How will the receiving side know when to start/stop receiving the file?
+
+Please look in above question for more details on how the receiving side will know when to start/stop receiving the file.
