@@ -16,6 +16,7 @@
 from socket import *
 import os
 import sys
+import os.path
 
 
 #Reference: Professor Gofman's sample code.
@@ -99,68 +100,76 @@ while True:
                 #Store filename into a variable.
                 fileName = command[1]
 
-                #Open the file.
-                fileObj = open(fileName, "r")
+                path = os.path.dirname(os.path.realpath(__file__))
+                
+                #Send the file to the server if it exists.
+                #Reference: http://stackoverflow.com/questions/82831/check-if-a-file-exists-using-python#comment38282943_82852
+                if os.path.isfile(path + "/" + fileName) == True:
 
-                #The file data.
-                fileData = None
+                    #Open the file.
+                    fileObj = open(fileName, "r")
 
-                # Send 'put' command to server.
-                clientSocket.send(command[0])
+                    #The file data.
+                    fileData = None
 
-                #Generate ephemeral port.
-                #Reference: Professor Gofman's example code.
-                dataSocket = socket(AF_INET, SOCK_STREAM)
-                dataSocket.bind(("", 0))
-                print("I chose ephemeral port: ", dataSocket.getsockname()[1])
+                    # Send 'put' command to server.
+                    clientSocket.send(command[0])
 
-                #Send ephemeral port number to server.
-                clientSocket.send(str(dataSocket.getsockname()[1]))
+                    #Generate ephemeral port.
+                    #Reference: Professor Gofman's example code.
+                    dataSocket = socket(AF_INET, SOCK_STREAM)
+                    dataSocket.bind(("", 0))
+                    print("I chose ephemeral port: ", dataSocket.getsockname()[1])
 
-                dataSocket.listen(1)
+                    #Send ephemeral port number to server.
+                    clientSocket.send(str(dataSocket.getsockname()[1]))
 
-                while 1:
-                    print("Waiting for server connection.")
+                    dataSocket.listen(1)
 
-                    connectionSocket, addr = dataSocket.accept()
+                    while 1:
+                        print("Waiting for server connection.")
 
-                    print("Received connection from the server.")
+                        connectionSocket, addr = dataSocket.accept()
 
-                    #Read 65536 bytes of data.
-                    fileData = fileObj.read(65536)
+                        print("Received connection from the server.")
 
-                    #Make sure we did not hit EOF.
-                    if fileData:
+                        #Read 65536 bytes of data.
+                        fileData = fileObj.read(65536)
 
-                        #Get the size of the data read and convert it to string.
-                        dataSizeStr = str(len(fileData))
+                        #Make sure we did not hit EOF.
+                        if fileData:
 
-                        #Prepend 0's to the size string until the size is 10 bytes.
-                        while len(dataSizeStr) < 10:
-                            dataSizeStr = "0" + dataSizeStr
+                            #Get the size of the data read and convert it to string.
+                            dataSizeStr = str(len(fileData))
 
-                        #Prepend the size of the data to the file data.
-                        fileData = dataSizeStr + fileData
+                            #Prepend 0's to the size string until the size is 10 bytes.
+                            while len(dataSizeStr) < 10:
+                                dataSizeStr = "0" + dataSizeStr
 
-                        #The number of bytes sent.
-                        numSent = 0
+                            #Prepend the size of the data to the file data.
+                            fileData = dataSizeStr + fileData
 
-                        #Send the data!
-                        while len(fileData) > numSent:
-                            numSent += connectionSocket.send(fileData[numSent:])
+                            #The number of bytes sent.
+                            numSent = 0
 
-                        #At this point, the client is done sending file data to the server.
+                            #Send the data!
+                            while len(fileData) > numSent:
+                                numSent += connectionSocket.send(fileData[numSent:])
 
-                        #Print out file name and number of bytes transferred.
-                        print("Sent " + fileName + " to the server.")
-                        print(numSent, " bytes sent to the server.")
+                            #At this point, the client is done sending file data to the server.
 
-                        #Finished sending the data, so close the data connection.
-                        connectionSocket.close()
+                            #Print out file name and number of bytes transferred.
+                            print("Sent " + fileName + " to the server.")
+                            print(numSent, " bytes sent to the server.")
 
-                        #Get the connection flag from the server.
-                        connectionFlag = clientSocket.recv(9)
-                        break
+                            #Finished sending the data, so close the data connection.
+                            connectionSocket.close()
+
+                            #Get the connection flag from the server.
+                            connectionFlag = clientSocket.recv(9)
+                            break
+                else:
+                    print("File does not exist")
 
         elif command[0] == "quit":
             # Send the command to the server.
