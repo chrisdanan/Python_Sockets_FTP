@@ -196,6 +196,8 @@ while 1:
 			#Reference: http://stackoverflow.com/questions/82831/check-if-a-file-exists-using-python#comment38282943_82852
 			if os.path.isfile(path + '/' + fileName) == True:
 
+				connectionSocket.send("1")
+
 				#Open the file.
 				fileObj = open(fileName, "r")
 
@@ -233,7 +235,7 @@ while 1:
 					serverDataSocket.close()
 			else:
 				print("File does not exist")
-				connectionSocket.send("1")
+				connectionSocket.send("0")
 	break
 
 connectionSocket.close()

@@ -149,57 +149,64 @@ while True:
                 #Send filename.
                 clientSocket.send(command[1])
 
-                #Generate ephemeral port.
-                #Reference: Professor Gofman's example code.
-                dataSocket = socket(AF_INET, SOCK_STREAM)
-                dataSocket.bind(("", 0))
-                print("I chose ephemeral port: ", dataSocket.getsockname()[1])
+                fileExistsFlag = clientSocket.recv(9)
 
-                #Send ephemeral port number to server.
-                clientSocket.send(str(dataSocket.getsockname()[1]))
-                dataSocket.listen(1)
+                print("fileExistsFlag", fileExistsFlag)
 
-                while 1:
-                    print("Waiting for server connection to channel.")
-                    connectionSocket, addr = dataSocket.accept()
+                if fileExistsFlag == "1":
+                    #Generate ephemeral port.
+                    #Reference: Professor Gofman's example code.
+                    dataSocket = socket(AF_INET, SOCK_STREAM)
+                    dataSocket.bind(("", 0))
+                    print("I chose ephemeral port: ", dataSocket.getsockname()[1])
 
-                    print("Received connection from the server.")
+                    #Send ephemeral port number to server.
+                    clientSocket.send(str(dataSocket.getsockname()[1]))
+                    dataSocket.listen(1)
 
-                    #The buffer to all data received from the server.
-                    fileData = ""
+                    while 1:
+                        print("Waiting for server connection to channel.")
+                        connectionSocket, addr = dataSocket.accept()
 
-                    #The size of the incoming file.
-                    recvBuff = ""
+                        print("Received connection from the server.")
 
-                    fileSize = 0
-                    
-                    #The buffer containing the file size.
-                    fileSizeBuff = ""
+                        #The buffer to all data received from the server.
+                        fileData = ""
 
-                    #Receive the first 10 bytes indicating the size of the file.
-                    fileSizeBuff = recvAll(connectionSocket, 10)
+                        #The size of the incoming file.
+                        recvBuff = ""
 
-                    fileSize = int(fileSizeBuff)
+                        fileSize = 0
+                        #The buffer containing the file size.
+                        fileSizeBuff = ""
 
-                    print("The file size is ", fileSize)
+                        #Receive the first 10 bytes indicating the size of the file.
+                        fileSizeBuff = recvAll(connectionSocket, 10)
 
-                    #Get the file data.
-                    fileData = recvAll(connectionSocket, fileSize)
+                        fileSize = int(fileSizeBuff)
 
-                    print (fileData)
+                        print("The file size is ", fileSize)
 
-                    print("File received: " + command[1])
-                    print("Size of file received: ", fileSize)
+                        #Get the file data.
+                        fileData = recvAll(connectionSocket, fileSize)
 
-                    print("Saving data to a file")
+                        print (fileData)
 
-                    solutionFile = open('client_received.txt', 'w')
-                    solutionFile.write(fileData)
-                    solutionFile.close()
+                        print("File received: " + command[1])
+                        print("Size of file received: ", fileSize)
 
-                    connectionSocket.close()
+                        print("Saving data to a file")
 
-                    break
+                        solutionFile = open('client_received.txt', 'w')
+                        solutionFile.write(fileData)
+                        solutionFile.close()
+
+                        connectionSocket.close()
+
+                        break
+                else:
+                    print("Server does not have that file.")
+                    connectionFlag = "1"
 
         elif command[0] == "put":
             #Check for correct usage of 'put'
