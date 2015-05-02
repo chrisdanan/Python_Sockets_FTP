@@ -172,6 +172,12 @@ while 1:
 
 			print("The file data is:" )
 			print fileData
+			print("Saving data to a file")
+
+			solutionFile = open('received.txt', 'w')
+			solutionFile.write(fileData)
+			solutionFile.close
+			
 			serverDataSocket.close()
 
 			print("SUCCESS")
