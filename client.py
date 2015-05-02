@@ -142,71 +142,59 @@ while True:
             if len(command) !=2:
                 print("USAGE get <filename>")
             else:
-
-                #Send 'get' command.
+                #print(command[1])
+                #Consider opening an ephemeral port on this one.
                 clientSocket.send(command[0])
-
-                #Send filename.
+                print(command[0])
                 clientSocket.send(command[1])
+                print(command[1])
 
-                fileExistsFlag = clientSocket.recv(9)
+                #Generate ephemeral port.
+                #Reference: Professor Gofman's example code.
+                dataSocket = socket(AF_INET, SOCK_STREAM)
+                dataSocket.bind(("", 0))
+                print("I chose ephemeral port: ", dataSocket.getsockname()[1])
 
-                print("fileExistsFlag", fileExistsFlag)
+                #Send ephemeral port number to server.
+                clientSocket.send(str(dataSocket.getsockname()[1]))
+                dataSocket.listen(1)
 
-                if fileExistsFlag == "1":
-                    #Generate ephemeral port.
-                    #Reference: Professor Gofman's example code.
-                    dataSocket = socket(AF_INET, SOCK_STREAM)
-                    dataSocket.bind(("", 0))
-                    print("I chose ephemeral port: ", dataSocket.getsockname()[1])
 
-                    #Send ephemeral port number to server.
-                    clientSocket.send(str(dataSocket.getsockname()[1]))
-                    dataSocket.listen(1)
+                print("Waiting for server connection to channel.")
+                connectionSocket, addr = dataSocket.accept()
 
-                    while 1:
-                        print("Waiting for server connection to channel.")
-                        connectionSocket, addr = dataSocket.accept()
+                print("Received connection from the server.")
 
-                        print("Received connection from the server.")
+                #The buffer to all data received from the server.
+                fileData = ""
 
-                        #The buffer to all data received from the server.
-                        fileData = ""
+                #The size of the incoming file.
+                recvBuff = ""
 
-                        #The size of the incoming file.
-                        recvBuff = ""
+                #The buffer containing the file size.
+                fileSizeBuff = ""
 
-                        fileSize = 0
-                        #The buffer containing the file size.
-                        fileSizeBuff = ""
+                #Receive the first 10 bytes indicating the size of the file.
+                fileSizeBuff = recvAll(connectionSocket, 10)
 
-                        #Receive the first 10 bytes indicating the size of the file.
-                        fileSizeBuff = recvAll(connectionSocket, 10)
+                print("The file size is ", fileSizeBuff)
 
-                        fileSize = int(fileSizeBuff)
+                fileSize = int(fileSizeBuff)
 
-                        print("The file size is ", fileSize)
+                #Get the file data.
+                fileData = recvAll(connectionSocket, fileSize)
 
-                        #Get the file data.
-                        fileData = recvAll(connectionSocket, fileSize)
+                print("The file size is ", fileSize)
+                print fileData
+                print("Saving data to a file")
 
-                        print (fileData)
+                solutionFile = open('client_received.txt', 'w')
+                solutionFile.write(fileData)
+                solutionFile.close()
 
-                        print("File received: " + command[1])
-                        print("Size of file received: ", fileSize)
+                connectionSocket.close()
 
-                        print("Saving data to a file")
-
-                        solutionFile = open('client_received.txt', 'w')
-                        solutionFile.write(fileData)
-                        solutionFile.close()
-
-                        connectionSocket.close()
-
-                        break
-                else:
-                    print("Server does not have that file.")
-                    connectionFlag = "1"
+                print("SUCCESS")
 
         elif command[0] == "put":
             #Check for correct usage of 'put'
@@ -277,6 +265,10 @@ while True:
                             #Print out file name and number of bytes transferred.
                             print("Sent " + fileName + " to the server.")
                             print(numSent, " bytes sent to the server.")
+
+                            solutionFile = open('client_received.txt', 'w')
+                            solutionFile.write(fileData)
+                            solutionFile.close
 
                             #Finished sending the data, so close the data connection.
                             connectionSocket.close()
